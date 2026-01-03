@@ -17,5 +17,6 @@ A Python script that downloads and stitches OpenStreetMap tiles to create a cust
 
 ```bash
 pip install requests Pillow tqdm
+```
 
 __ Made by R Square Innovation Software __
