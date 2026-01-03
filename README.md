@@ -19,4 +19,4 @@ A Python script that downloads and stitches OpenStreetMap tiles to create a cust
 pip install requests Pillow tqdm
 ```
 
-__ Made by R Square Innovation Software __
+_Made by R Square Innovation Software_
