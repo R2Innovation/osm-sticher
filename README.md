@@ -365,4 +365,6 @@ Map data © OpenStreetMap contributors, licensed under the [Open Data Commons Op
 
 Configuration via script variables
 
-Disclaimer: This tool is for educational and legitimate mapping purposes. Users are responsible for complying with OpenStreetMap's terms of service and all applicable laws.
+___________________________________________
+**Disclaimer:** This tool is for educational and legitimate mapping purposes. Users are responsible
+                for complying with OpenStreetMap's terms of service and all applicable laws.
