@@ -8,6 +8,7 @@ import requests
 from PIL import Image
 import math
 import os
+import sys
 from tqdm import tqdm
 
 # --- Configuration ---
@@ -46,7 +47,7 @@ def fn_calculate_tile_ranges(fMinLon, fMinLat, fMaxLon, fMaxLat, iZoomLevel):
     iBottomTileX, iBottomTileY = fn_degrees_to_tile_numbers(fMinLat, fMaxLon, iZoomLevel)
     
     vTileRangeX = range(iTopTileX, iBottomTileX + 1)
-    vTileRangeY = range(iTopTileX, iBottomTileY + 1)
+    vTileRangeY = range(iTopTileY, iBottomTileY + 1)
     
     return vTileRangeX, vTileRangeY
 
@@ -69,7 +70,7 @@ def fn_download_tile(sUrl, sTilePath):
     """Download a single tile and save it"""
     try:
         oResponse = requests.get(sUrl, stream=True, 
-                                headers={'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64; rv:146.0) Gecko/20100101 Firefox/146.0'})
+                                headers={'User-Agent': 'R-Square-MapStitcher/2.0 (contact@rsquareinnovative.com)'})
         oResponse.raise_for_status()
         return oResponse
     except requests.exceptions.RequestException as e:
@@ -160,21 +161,197 @@ def fn_stitch_tiles(fMinLon, fMinLat, fMaxLon, fMaxLat, iZoomLevel, sOutputPath,
     print(f"\nSuccessfully saved stitched map to {os.path.abspath(sOutputPath)}")
     return True
 
-def fn_main():
-    """Main execution function"""
+def fn_print_usage():
+    """Display detailed usage information"""
+    sHelpText = """
+╔══════════════════════════════════════════════════════════════════════════╗
+║                    R Square Map Stitcher v2 - Usage Help                 ║
+║                          GPLv3 Licensed Software                         ║
+╚══════════════════════════════════════════════════════════════════════════╝
+
+SYNOPSIS:
+    python stitcher_v2.py [OPTIONS]
+
+DESCRIPTION:
+    Downloads and stitches OpenStreetMap tiles to create custom high-resolution
+    map images based on geographical coordinates.
+
+QUICK START:
+    1. Edit the configuration variables at the top of the script
+    2. Run: python stitcher_v2.py
+    3. Find your map in the specified output file
+
+CONFIGURATION OPTIONS (Edit in script):
+
+    # --- Geographical Bounding Box ---
+    fMinLat = 44.80924      # Minimum latitude (south)
+    fMinLon = -0.64236      # Minimum longitude (west)
+    fMaxLat = 44.87959      # Maximum latitude (north)
+    fMaxLon = -0.46795      # Maximum longitude (east)
+
+    # --- Zoom Level ---
+    iZoom = 17              # Higher = more detail, more tiles (1-19 typical)
+
+    # --- Output Configuration ---
+    sOutputFile = "custom_map_zoom17_PROGRESS.png"
+    sTileDir = "downloaded_tiles_progress"
+
+COORDINATE FORMAT:
+    • Latitude:  -90 to 90 (negative = south)
+    • Longitude: -180 to 180 (negative = west)
+    • Format:    Decimal degrees (e.g., 44.80924, -0.64236)
+
+ZOOM LEVEL GUIDE:
+    • 1-10:     Continental/Country scale
+    • 11-15:    City/Town scale
+    • 16-19:    Street/Building detail (more tiles, slower)
+    • 20+:      Very high detail (may exceed OSM server limits)
+
+OUTPUT:
+    • Individual tiles saved in: [sTileDir]/zoom_x_y.png
+    • Final stitched image: [sOutputFile]
+    • Image dimensions: (tiles_x * 256) x (tiles_y * 256) pixels
+
+COMMAND LINE OPTIONS:
+    --help, -h      : Show this help message
+    --quick, -q     : Show quick reference guide
+    --license, -l   : Show license information
+    --run, -r       : Run the stitching process (default)
+
+EXAMPLE USAGE:
+    python stitcher_v2.py               # Run with default configuration
+    python stitcher_v2.py --help        # Show help
+    python stitcher_v2.py --quick       # Quick reference
+    python stitcher_v2.py --license     # License information
+
+TROUBLESHOOTING:
+
+    Problem: No tiles downloaded
+    Solution: Check internet connection and verify coordinates
+
+    Problem: Final image is too small
+    Solution: Increase zoom level or expand bounding box
+
+    Problem: Download is very slow
+    Solution: Reduce zoom level or area size
+
+    Problem: Image has black/empty areas
+    Solution: Some tile servers may have coverage gaps
+
+LEGAL INFORMATION:
+    • This software is licensed under GPLv3
+    • Map data © OpenStreetMap contributors
+    • Tile usage must comply with OSM policies
+    • Commercial use may require additional permissions
+
+CONTACT:
+    R Square Innovative Software
+    Email: contact@rsquareinnovative.com
+
+For more information: https://operations.osmfoundation.org/policies/tiles/
+    """
+    print(sHelpText)
+    return True
+
+def fn_print_quick_reference():
+    """Display quick reference guide"""
+    sQuickRef = """
+QUICK REFERENCE:
+
+1. GET COORDINATES:
+   • Use https://www.openstreetmap.org
+   • Right-click → "Show Address"
+   • Note lat/lon from URL
+
+2. CALCULATE AREA:
+   • Determine NW (top-left) and SE (bottom-right) corners
+   • Format: fMinLat, fMinLon, fMaxLat, fMaxLon
+
+3. CHOOSE ZOOM:
+   • City overview: 12-14
+   • Neighborhood: 15-16
+   • Street detail: 17-18
+   • Building detail: 19
+
+4. ESTIMATE TILES:
+   • Zoom 17: ~1 tile per 0.002° x 0.002°
+   • Final size = tiles × 256 pixels
+
+5. RUN:
+   python stitcher_v2.py
+
+6. CHECK OUTPUT:
+   • Tiles saved in: sTileDir/
+   • Final map: sOutputFile
+    """
+    print(sQuickRef)
+    return True
+
+def fn_print_license_info():
+    """Display license information"""
+    sLicenseInfo = """
+GNU GENERAL PUBLIC LICENSE Version 3
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program. If not, see <https://www.gnu.org/licenses/>.
+
+ADDITIONAL REQUIREMENTS FOR OSM DATA:
+• You must credit OpenStreetMap contributors
+• You must make it clear that data is available under ODbL
+• You must provide a way to access the ODbL
+• See: https://www.openstreetmap.org/copyright
+    """
+    print(sLicenseInfo)
+    return True
+
+def fn_main_with_help():
+    """Main function with integrated help system"""
+    
+    # Check for command line arguments
+    if len(sys.argv) > 1:
+        sArg = sys.argv[1].lower()
+        
+        if sArg in ['-h', '--help', '/?', 'help']:
+            fn_print_usage()
+            return True
+        elif sArg in ['-q', '--quick']:
+            fn_print_quick_reference()
+            return True
+        elif sArg in ['-l', '--license']:
+            fn_print_license_info()
+            return True
+        elif sArg in ['-r', '--run']:
+            # Continue with normal execution
+            pass
+        else:
+            print(f"Unknown option: {sArg}")
+            print("Use --help for usage information")
+            return False
+    
+    # Normal execution (no arguments or --run specified)
     print("R Square Map Stitcher v2 - GPLv3 Licensed")
-    print("Starting tile stitching process...")
+    print("Starting tile stitching process...\n")
     
     bSuccess = fn_stitch_tiles(fMinLon, fMinLat, fMaxLon, fMaxLat, 
-                               iZoom, sOutputFile, sTileDir)
+                              iZoom, sOutputFile, sTileDir)
     
     if bSuccess:
-        print("Process completed successfully!")
+        print("\nProcess completed successfully!")
     else:
-        print("Process encountered errors!")
+        print("\nProcess encountered errors!")
     
     return bSuccess
 
 # Execute main function
 if __name__ == "__main__":
-    fn_main()
+    fn_main_with_help()
