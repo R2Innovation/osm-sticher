@@ -362,8 +362,7 @@ Map data © OpenStreetMap contributors, licensed under the [Open Data Commons Op
 ### v1.0
 - Initial release
 - Basic tile downloading and stitching
-
-Configuration via script variables
+- Configuration via script variables
 
 ___________________________________________
 **Disclaimer:** This tool is for educational and legitimate mapping purposes. Users are responsible
