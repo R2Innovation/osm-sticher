@@ -221,8 +221,9 @@ When using maps created with this script, you must include:
 Or use the provided HTML:
 ```html
 <a href="https://www.openstreetmap.org/copyright">© OpenStreetMap contributors</a>
-Rate Limiting Recommendations
 ```
+
+### Rate Limiting Recommendations
 
 For large downloads, consider adding delays:
 ```python
